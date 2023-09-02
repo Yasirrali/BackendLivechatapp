@@ -6,6 +6,7 @@ const messageRoutes = require("./routes/messages");
 const app = express();
 const socket = require("socket.io");
 require("dotenv").config();
+const Pusher = require("pusher");
 const path = require('path')
 
 app.use(cors());
@@ -36,24 +37,22 @@ app.get('*', function(req,res){
 const server = app.listen(process.env.PORT, () =>
   console.log(`Server started on ${process.env.PORT}`)
 );
-const io = socket(server, {
+const io = pusher(server, {
   cors: {
     origin: "http://localhost:3000",
     credentials: true,
   },
 });
 
-global.onlineUsers = new Map();
-io.on("connection", (socket) => {
-  global.chatSocket = socket;
-  socket.on("add-user", (userId) => {
-    onlineUsers.set(userId, socket.id);
-  });
 
-  socket.on("send-msg", (data) => {
-    const sendUserSocket = onlineUsers.get(data.to);
-    if (sendUserSocket) {
-      socket.to(sendUserSocket).emit("msg-recieve", data.msg);
-    }
-  });
+const pusher = new Pusher({
+  appId: "1663306",
+  key: "4f078f496fba5b6af9a9",
+  secret: "e3851381157c332e6488",
+  cluster: "ap2",
+  useTLS: true
+});
+
+pusher.trigger("my-channel", "my-event", {
+  message: "hello world"
 });
